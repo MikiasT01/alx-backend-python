@@ -22,13 +22,13 @@ class TestAccessNestedMapBase(unittest.TestCase):
         """Test that access_nested_map raises KeyError with 'a' for {} with path ('a',)."""
         with self.assertRaises(KeyError) as context:
             access_nested_map({}, ("a",))
-        self.assertEqual(str(context.exception), "a")
+        self.assertEqual(str(context.exception), "'a'")
 
     def test_access_nested_map_exception_two(self):
         """Test that access_nested_map raises KeyError with 'b' for {'a': 1} with path ('a', 'b')."""
         with self.assertRaises(KeyError) as context:
             access_nested_map({"a": 1}, ("a", "b"))
-        self.assertEqual(str(context.exception), "b")
+        self.assertEqual(str(context.exception), "'b'")
 
 if __name__ == '__main__':
     unittest.main()
