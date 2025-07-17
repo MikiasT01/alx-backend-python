@@ -1,19 +1,22 @@
 import sqlite3
 import functools
+from datetime import datetime
 import logging
 
-# Configure logging to write to a file (e.g., 'query.log')
+# Configure logging to write to a file with custom timestamp
 logging.basicConfig(filename='query.log', level=logging.INFO,
-                    format='%(asctime)s - %(message)s')
+                    format='%(message)s')
 
 #### Decorator to log SQL queries
 def log_queries(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        # Get the query from args (assuming it's the first positional argument)
+        # Get the query from args or kwargs
         query = args[0] if args else kwargs.get('query', '')
         if query:
-            logging.info(f"Executing query: {query}")
+            # Log with custom datetime timestamp
+            timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            logging.info(f"[{timestamp}] Executing query: {query}")
         # Execute the original function
         result = func(*args, **kwargs)
         return result
@@ -30,14 +33,17 @@ def fetch_all_users(query):
 
 #### Fetch users while logging the query
 if __name__ == "__main__":
-    # Ensure users.db exists with a users table (create if needed)
+    # Create users.db and users table if they don't exist
     conn = sqlite3.connect('users.db')
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS users 
-                      (id INTEGER PRIMARY KEY, name TEXT, age INTEGER)''')
+                      (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, age INTEGER)''')
+    # Add some test data
+    cursor.execute("INSERT OR IGNORE INTO users (name, age) VALUES (?, ?)", ("Alice", 30))
+    cursor.execute("INSERT OR IGNORE INTO users (name, age) VALUES (?, ?)", ("Bob", 25))
     conn.commit()
     conn.close()
 
     # Test the function
     users = fetch_all_users(query="SELECT * FROM users")
-    print(users)  # Should print empty list if no data, logged in query.log
+    print(users)  # Should print [(1, 'Alice', 30), (2, 'Bob', 25)]
