@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Test module for utils.access_nested_map function."""
+"""Test module for utils.access_nested_map and utils.get_json functions."""
 import unittest
-from utils import access_nested_map
+from unittest.mock import Mock, patch
+from utils import access_nested_map, get_json
 
 class TestAccessNestedMapBase(unittest.TestCase):
     """Base test cases for the access_nested_map function."""
@@ -29,6 +30,31 @@ class TestAccessNestedMapBase(unittest.TestCase):
         with self.assertRaises(KeyError) as context:
             access_nested_map({"a": 1}, ("a", "b"))
         self.assertEqual(str(context.exception), "'b'")
+
+class TestGetJson(unittest.TestCase):
+    """Test cases for the get_json function."""
+    
+    @patch('utils.requests.get')
+    def test_get_json_example_com(self, mock_get):
+        """Test get_json with http://example.com returns {'payload': True}."""
+        mock_response = Mock()
+        mock_response.json.return_value = {"payload": True}
+        mock_get.return_value = mock_response
+        
+        result = get_json("http://example.com")
+        self.assertEqual(result, {"payload": True})
+        mock_get.assert_called_once_with("http://example.com")
+
+    @patch('utils.requests.get')
+    def test_get_json_holberton_io(self, mock_get):
+        """Test get_json with http://holberton.io returns {'payload': False}."""
+        mock_response = Mock()
+        mock_response.json.return_value = {"payload": False}
+        mock_get.return_value = mock_response
+        
+        result = get_json("http://holberton.io")
+        self.assertEqual(result, {"payload": False})
+        mock_get.assert_called_once_with("http://holberton.io")
 
 if __name__ == '__main__':
     unittest.main()
