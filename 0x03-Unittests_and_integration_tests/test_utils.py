@@ -3,8 +3,8 @@
 import unittest
 from utils import access_nested_map
 
-class TestAccessNestedMap(unittest.TestCase):
-    """Test cases for the access_nested_map function."""
+class TestAccessNestedMapBase(unittest.TestCase):
+    """Base test cases for the access_nested_map function."""
     
     def test_access_nested_map_one(self):
         """Test that access_nested_map returns 1 for {'a': 1} with path ('a',)."""
