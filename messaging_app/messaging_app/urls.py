@@ -22,5 +22,6 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('chats.urls')),  # Include chats app routes under /api/
+    path('api-auth/', include('rest_framework.urls')),
     re_path(r'^$', RedirectView.as_view(url='/api/', permanent=False)),  # Redirect root to /api/
 ]
