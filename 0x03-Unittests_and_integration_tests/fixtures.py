@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
+# fixtures.py
+ORG_PAYLOAD = {"repos_url": "http://example.com/repos"}
+REPOS_PAYLOAD = ["repo1", "repo2"]
+EXPECTED_REPOS = ["repo1", "repo2"]
+APACHE2_REPOS = ["repo3"]
 
 TEST_PAYLOAD = [
   (
     {"repos_url": "https://api.github.com/orgs/google/repos"},
+    
     [
       {
         "id": 7697149,

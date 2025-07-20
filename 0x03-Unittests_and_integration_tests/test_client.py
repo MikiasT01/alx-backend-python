@@ -100,10 +100,24 @@ class TestIntegrationGithubOrgClient(unittest.TestCase):
         cls.get_patcher.stop()
 
     def test_public_repos(self) -> None:
-        """Test public_repos with integration setup."""
+        """Test that public_repos returns the expected repositories.
+
+        This integration test verifies the end-to-end functionality of
+        public_repos using mocked external requests.
+        """
         client = GithubOrgClient("test")
         result = client.public_repos()
         self.assertEqual(result, self.expected_repos)
+
+    def test_public_repos_with_license(self) -> None:
+        """Test that public_repos with license filter returns expected repositories.
+
+        This integration test checks the method with a license="apache-2.0" filter,
+        ensuring it matches the apache2_repos fixture.
+        """
+        client = GithubOrgClient("test")
+        result = client.public_repos(license="apache-2.0")
+        self.assertEqual(result, self.apache2_repos)
 
 
 if __name__ == '__main__':
