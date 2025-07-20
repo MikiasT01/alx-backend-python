@@ -1,6 +1,6 @@
 # messaging_app/chats/models.py
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 import uuid
 
 class User(AbstractUser):
@@ -18,6 +18,7 @@ class User(AbstractUser):
         blank=False
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    objects = UserManager()
 
     class Meta:
         indexes = [models.Index(fields=['email'], name='user_email_idx')]
@@ -39,6 +40,7 @@ class Conversation(models.Model):
 class Message(models.Model):
     message_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, unique=True)
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')  # Correct field name
     message_body = models.TextField(null=False, blank=False)
     sent_at = models.DateTimeField(auto_now_add=True)
 
