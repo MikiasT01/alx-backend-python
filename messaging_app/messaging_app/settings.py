@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-xxxx'  # Replace with a secure key or use environm
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
+AUTH_USER_MODEL = 'chats.User'
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
