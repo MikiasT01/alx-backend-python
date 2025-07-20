@@ -1,11 +1,10 @@
 # messaging_app/chats/serializers.py
-from rest_framework import serializers
-from rest_framework.exceptions import ValidationError  # Explicitly imported for ValidationError
+from rest_framework import serializers  # Import serializers module for ValidationError
 from .models import User, Conversation, Message
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model with custom validation."""
-    custom_note = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")  # Explicit CharField
+    custom_note = serializers.CharField(max_length=200, required=False, allow_blank=True, default="")
 
     class Meta:
         model = User
@@ -14,13 +13,13 @@ class UserSerializer(serializers.ModelSerializer):
     def validate_custom_note(self, value):
         """Validate custom_note field."""
         if len(value) > 200:
-            raise ValidationError("Custom note cannot exceed 200 characters.")
+            raise serializers.ValidationError("Custom note cannot exceed 200 characters.")
         return value
 
 class MessageSerializer(serializers.ModelSerializer):
     """Serializer for Message model with sender details and custom validation."""
     sender = UserSerializer(read_only=True)
-    custom_status = serializers.CharField(max_length=50, required=False, default="sent")  # Explicit CharField
+    custom_status = serializers.CharField(max_length=50, required=False, default="sent")
 
     class Meta:
         model = Message
@@ -29,14 +28,14 @@ class MessageSerializer(serializers.ModelSerializer):
     def validate_message_body(self, value):
         """Validate that message_body is not empty."""
         if not value.strip():
-            raise ValidationError("Message body cannot be empty or whitespace.")  # Explicit ValidationError
+            raise serializers.ValidationError("Message body cannot be empty or whitespace.")
         return value
 
     def validate_custom_status(self, value):
         """Validate custom_status field."""
         valid_statuses = ['sent', 'read', 'delivered']
         if value.lower() not in valid_statuses:
-            raise ValidationError(f"Status must be one of {valid_statuses}.")
+            raise serializers.ValidationError(f"Status must be one of {valid_statuses}.")
         return value
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -53,15 +52,25 @@ class ConversationSerializer(serializers.ModelSerializer):
         """Return the number of messages in the conversation."""
         return obj.messages.count()
 
+    def validate_messages(self, value):
+        """Validate nested messages to ensure at least one message exists."""
+        if not value or len(value) == 0:
+            raise serializers.ValidationError("A conversation must contain at least one message.")
+        return value
+
     def validate(self, data):
         """Custom validation to ensure at least two participants."""
         if 'participants' not in self.context or len(self.context['participants']) < 2:
-            raise ValidationError("A conversation must have at least two participants.")  # Explicit ValidationError
+            raise serializers.ValidationError("A conversation must have at least two participants.")
         return data
 
     def create(self, validated_data):
-        """Custom create method to handle nested participants."""
+        """Custom create method to handle nested participants and messages."""
         participants_data = self.context.get('participants', [])
         conversation = Conversation.objects.create()
         conversation.participants.set(participants_data)
+        # Handle nested messages (requires a view to provide message data)
+        messages_data = validated_data.get('messages', [])
+        for message_data in messages_data:
+            Message.objects.create(conversation=conversation, **message_data)
         return conversation
