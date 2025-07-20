@@ -1,13 +1,12 @@
 # messaging_app/chats/serializers.py
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from .models import Conversation, Message
+from .models import User, Conversation, Message
 
 class UserSerializer(serializers.ModelSerializer):
     """Serializer for User model."""
     class Meta:
         model = User
-        fields = ['id', 'username', 'email']
+        fields = ['user_id', 'first_name', 'last_name', 'email', 'phone_number', 'role', 'created_at']
 
 class MessageSerializer(serializers.ModelSerializer):
     """Serializer for Message model with sender details."""
@@ -15,7 +14,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ['id', 'sender', 'content', 'sent_at']
+        fields = ['message_id', 'sender', 'message_body', 'sent_at']
 
 class ConversationSerializer(serializers.ModelSerializer):
     """Serializer for Conversation model with nested messages and participants."""
@@ -24,4 +23,4 @@ class ConversationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Conversation
-        fields = ['id', 'participants', 'messages', 'created_at']
+        fields = ['conversation_id', 'participants', 'messages', 'created_at']
