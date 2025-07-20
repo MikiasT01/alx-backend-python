@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',  # DRF app
     'chats',           # chats app
+    'django_filters',  
 ]
 
 MIDDLEWARE = [

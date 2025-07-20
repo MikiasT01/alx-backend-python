@@ -1,11 +1,8 @@
-from django.shortcuts import render
-
-# Create your views here.
-# messaging_app/chats/views.py
 # messaging_app/chats/views.py
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.contrib.auth.models import User
+from django_filters.rest_framework import DjangoFilterBackend  # Added for filters
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
 
@@ -13,6 +10,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
     """ViewSet for listing and creating conversations."""
     queryset = Conversation.objects.all()
     serializer_class = ConversationSerializer
+    filter_backends = [DjangoFilterBackend]  # Added filter backend
+    filterset_fields = ['conversation_id', 'participants__user_id']  # Allow filtering by conversation_id and participant user_id
 
     def create(self, request, *args, **kwargs):
         """Create a new conversation with participants."""
@@ -43,6 +42,8 @@ class MessageViewSet(viewsets.ModelViewSet):
     """ViewSet for sending messages to an existing conversation."""
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
+    filter_backends = [DjangoFilterBackend]  # Added filter backend
+    filterset_fields = ['message_id', 'conversation__conversation_id', 'sender__user_id']  # Allow filtering by message_id, conversation_id, and sender user_id
 
     def create(self, request, *args, **kwargs):
         """Send a message to an existing conversation."""
@@ -68,10 +69,6 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         """List all messages (optionally filter by conversation)."""
-        conversation_id = request.query_params.get('conversation')
-        if conversation_id:
-            queryset = self.get_queryset().filter(conversation__conversation_id=conversation_id)
-        else:
-            queryset = self.get_queryset()
+        queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)

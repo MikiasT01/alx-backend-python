@@ -14,10 +14,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+# messaging_app/urls.py
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path, include, re_path
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('chats.urls')),
+    re_path(r'^$', RedirectView.as_view(url='/api/', permanent=False)),  # Add root URL redirect to /api/
 ]
