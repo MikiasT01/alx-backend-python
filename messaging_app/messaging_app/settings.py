@@ -118,6 +118,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'chats.pagination.MessagePagination',  # Custom pagination class
+    'PAGE_SIZE': 20,
 }
 
 # SimpleJWT Configuration
