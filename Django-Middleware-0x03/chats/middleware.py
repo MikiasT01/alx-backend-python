@@ -1,11 +1,16 @@
-# Django-Middleware-0x03/apps/core/chats/middleware.py
+# Django-Middleware-0x03/chats/middleware.py
 import logging
 from datetime import datetime
+from pathlib import Path
 
-# Configure a basic logger to write to requests.log in the project root
+# Define the absolute path for the log file in the project root
+project_root = Path(__file__).resolve().parent.parent  # Go up to project root from chats
+log_file = project_root / 'requests.log'
+
+# Configure a basic logger
 logger = logging.getLogger('request_logger')
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler('requests.log')  # Log file in project root
+handler = logging.FileHandler(log_file)  # Use absolute path
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
