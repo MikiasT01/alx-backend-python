@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django_filters.rest_framework import DjangoFilterBackend
 from .models import Conversation, Message
 from .serializers import ConversationSerializer, MessageSerializer
+from .permissions import IsOwnerOrReadOnly
 
 class ConversationViewSet(viewsets.ModelViewSet):
     """ViewSet for handling Conversation model operations."""
@@ -12,6 +13,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['conversation_id', 'participants__user_id']
+    permission_classes = [IsOwnerOrReadOnly]
 
     def create(self, request, *args, **kwargs):
         """Create a new conversation with participants."""
@@ -32,11 +34,12 @@ class MessageViewSet(viewsets.ModelViewSet):
     serializer_class = MessageSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['message_id', 'conversation__conversation_id', 'sender__user_id']
+    permission_classes = [IsOwnerOrReadOnly]
 
     def get_queryset(self):
         """Filter messages by conversation if nested."""
         queryset = super().get_queryset()
-        conversation = self.kwargs.get('conversation_pk')  # From NestedDefaultRouter
+        conversation = self.kwargs.get('conversation_pk')
         if conversation is not None:
             return queryset.filter(conversation_id=conversation)
         return queryset
