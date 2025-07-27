@@ -5,7 +5,7 @@ from datetime import datetime
 # Configure a basic logger
 logger = logging.getLogger('request_logger')
 logger.setLevel(logging.INFO)
-handler = logging.FileHandler('request_logs.log')
+handler = logging.FileHandler('requests.log')
 formatter = logging.Formatter('%(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
