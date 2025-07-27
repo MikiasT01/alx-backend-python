@@ -36,8 +36,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'chats.middleware.RequestLoggingMiddleware',  # Existing middleware
-    'chats.middleware.RestrictAccessByTimeMiddleware',  # New middleware
+    'chats.middleware.RequestLoggingMiddleware',
+    'chats.middleware.RestrictAccessByTimeMiddleware',
+    'chats.middleware.OffensiveLanguageMiddleware',  # New middleware
+    'chats.middleware.RolePermissionMiddleware',     # New middleware
 ]
 
 ROOT_URLCONF = 'messaging_app.urls'
@@ -56,7 +58,7 @@ TEMPLATES = [
             ],
         },
     },
-]
+  ]
 
 WSGI_APPLICATION = 'messaging_app.wsgi.application'
 
