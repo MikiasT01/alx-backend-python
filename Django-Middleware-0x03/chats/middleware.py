@@ -101,7 +101,6 @@ class RolePermissionMiddleware:
     
     def __call__(self, request):
         """Check if the user is admin or moderator before allowing access."""
-        # Assume role is stored in a custom user model field (e.g., is_admin or role)
         if request.user.is_authenticated:
             # Simulate role check (adjust based on your user model)
             is_admin = getattr(request.user, 'is_admin', False)  # Example field
