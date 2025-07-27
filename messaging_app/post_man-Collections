@@ -2,10 +2,10 @@
   "info": {
     "name": "Messaging API Tests",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "temp-1234-5678-9012",  
+    "_postman_id": "temp-1234-5678-9012",
     "description": "Test suite for messaging_app API endpoints",
     "version": "1.0.0",
-    "postman_id": "your-unique-id-here"
+    "postman_id": "temp-1234-5678-9012"
   },
   "item": [
     {
