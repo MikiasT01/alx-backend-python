@@ -92,7 +92,7 @@ class OffensiveLanguageMiddleware:
         response = self.get_response(request)
         return response
 
-class RolePermissionMiddleware:
+class RolepermissionMiddleware:
     """Middleware to enforce role-based access permissions for chat actions."""
     
     def __init__(self, get_response):
