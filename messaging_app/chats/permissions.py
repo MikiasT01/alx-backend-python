@@ -1,21 +1,38 @@
-# messaging_app/chats/permissions.py
+# Django-Middleware-0x03/chats/permissions.py
 from rest_framework import permissions
 from .models import Conversation, Message
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """Custom permission to allow owners of an object to edit it."""
+class IsAuthenticatedParticipant(permissions.BasePermission):
+    """Custom permission to ensure only authenticated participants can access and modify conversations and messages."""
     
+    def has_permission(self, request, view):
+        """Check if the user is authenticated for all API access."""
+        return request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
-        # Allow GET, HEAD, or OPTIONS requests (read-only) for all
+        """Check object-level permissions based on authentication and participation."""
+        if not request.user.is_authenticated:
+            return False
+        
         if request.method in permissions.SAFE_METHODS:
-            return True
+            if isinstance(obj, Conversation):
+                return request.user in obj.participants.all()
+            if isinstance(obj, Message):
+                return obj.conversation.participants.filter(id=request.user.id).exists()
+            return False
         
-        # Check ownership for Conversations
-        if isinstance(obj, Conversation):
-            return request.user in obj.participants.all()
+        if request.method in ['PUT', 'PATCH', 'DELETE']:
+            if isinstance(obj, Conversation):
+                return request.user in obj.participants.all()
+            if isinstance(obj, Message):
+                return obj.conversation.participants.filter(id=request.user.id).exists()
+            return False
         
-        # Check ownership for Messages
-        if isinstance(obj, Message):
-            return obj.conversation.participants.filter(id=request.user.id).exists()
+        if request.method == 'POST':
+            if isinstance(obj, Conversation):
+                return request.user in obj.participants.all()
+            if isinstance(obj, Message):
+                return obj.conversation.participants.filter(id=request.user.id).exists()
+            return False
         
         return False
