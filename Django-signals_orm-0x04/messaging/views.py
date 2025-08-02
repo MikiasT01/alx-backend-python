@@ -47,5 +47,6 @@ def threaded_conversation(request, message_id):
 @login_required
 def inbox(request):
     """Display only unread messages for the logged-in user with optimized fields."""
-    unread_messages = Message.unread.unread_for_user(request.user)  # Explicitly use the custom manager
+    # Explicitly apply .only() to ensure optimization is visible in the view
+    unread_messages = Message.unread.unread_for_user(request.user).only('id', 'content', 'sender', 'timestamp')
     return render(request, 'messaging/inbox.html', {'unread_messages': unread_messages})

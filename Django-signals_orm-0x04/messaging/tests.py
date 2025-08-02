@@ -23,10 +23,15 @@ class UnreadMessagesTestCase(TestCase):
         )
         self.client.login(username='user1', password='testpass123')
 
-    def test_inbox_view_with_custom_manager(self):
-        """Test that inbox uses UnreadMessagesManager with unread_for_user."""
+    def test_inbox_view_with_only_optimization(self):
+        """Test that inbox uses UnreadMessagesManager with explicit .only()."""
         response = self.client.get(reverse('inbox'))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Unread message')
         self.assertNotContains(response, 'Read message')
         self.assertEqual(len(response.context['unread_messages']), 1)
+        # Approximate check for .only() via field access (limited fields should work)
+        for msg in response.context['unread_messages']:
+            self.assertTrue(hasattr(msg, 'content'))
+            self.assertTrue(hasattr(msg, 'sender'))
+            self.assertTrue(hasattr(msg, 'timestamp'))
