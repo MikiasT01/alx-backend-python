@@ -1,14 +1,10 @@
 # Django-signals_orm-0x04/messaging/models.py
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from .managers import UnreadMessagesManager
 
 class User(AbstractUser):
     pass
-
-class UnreadMessagesManager(models.Manager):
-    """Custom manager to filter unread messages for a specific user."""
-    def for_user(self, user):
-        return self.filter(receiver=user, read=False).only('id', 'content', 'sender', 'timestamp')
 
 class Message(models.Model):
     sender = models.ForeignKey(User, related_name='sent_messages', on_delete=models.CASCADE)
@@ -17,7 +13,7 @@ class Message(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     edited = models.BooleanField(default=False)
     parent_message = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
-    read = models.BooleanField(default=False)  # New field to track read status
+    read = models.BooleanField(default=False)
 
     objects = models.Manager()  # Default manager
     unread = UnreadMessagesManager()  # Custom manager

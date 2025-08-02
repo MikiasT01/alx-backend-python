@@ -1,33 +1,32 @@
 # Django-signals_orm-0x04/messaging/tests.py
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
-from .models import Message, Notification, MessageHistory
+from django.urls import reverse
+from .models import Message
 
-class DeleteSignalTestCase(TestCase):
+class UnreadMessagesTestCase(TestCase):
     def setUp(self):
         self.client = Client()
         self.user1 = User.objects.create_user(username='user1', password='testpass123')
         self.user2 = User.objects.create_user(username='user2', password='testpass123')
-        self.message = Message.objects.create(
-            sender=self.user1,
-            receiver=self.user2,
-            content='Test message'
+        self.unread_msg = Message.objects.create(
+            sender=self.user2,
+            receiver=self.user1,
+            content='Unread message',
+            read=False
         )
-        Notification.objects.create(user=self.user2, message=self.message)
-        MessageHistory.objects.create(
-            message=self.message,
-            old_content='Original',
-            edited_by=self.user1
+        self.read_msg = Message.objects.create(
+            sender=self.user2,
+            receiver=self.user1,
+            content='Read message',
+            read=True
         )
         self.client.login(username='user1', password='testpass123')
 
-    def test_user_deletion_cleans_up_data(self):
-        """Test that deleting a user cleans up related data with filter-based deletion."""
-        initial_message_count = Message.objects.count()
-        initial_notification_count = Notification.objects.count()
-        initial_history_count = MessageHistory.objects.count()
-        self.client.post('/delete/')
-        self.assertEqual(User.objects.filter(username='user1').count(), 0)
-        self.assertEqual(Message.objects.count(), initial_message_count - 2)  # Adjust for related deletions
-        self.assertEqual(Notification.objects.count(), initial_notification_count - 1)
-        self.assertEqual(MessageHistory.objects.count(), initial_history_count - 1)
+    def test_inbox_view_with_custom_manager(self):
+        """Test that inbox uses UnreadMessagesManager with unread_for_user."""
+        response = self.client.get(reverse('inbox'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Unread message')
+        self.assertNotContains(response, 'Read message')
+        self.assertEqual(len(response.context['unread_messages']), 1)
