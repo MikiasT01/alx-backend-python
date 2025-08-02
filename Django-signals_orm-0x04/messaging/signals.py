@@ -27,9 +27,9 @@ def log_message_edit(sender, instance, **kwargs):
 @receiver(post_delete, sender=User)
 def cleanup_user_data(sender, instance, **kwargs):
     """Clean up related data when a user is deleted."""
-    # Delete sent and received messages
-    instance.sent_messages.all().delete()
-    instance.received_messages.all().delete()
+    # Explicitly filter and delete messages where the user is sender or receiver
+    Message.objects.filter(sender=instance).delete()
+    Message.objects.filter(receiver=instance).delete()
     # Delete notifications for the user
     Notification.objects.filter(user=instance).delete()
     # Delete message histories where the user was the editor
