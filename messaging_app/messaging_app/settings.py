@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'messaging',
     'rest_framework',  # DRF app
     'chats',           # chats app
     'django_filters',

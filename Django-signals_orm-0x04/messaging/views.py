@@ -2,6 +2,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
+from django.views.decorators.cache import cache_page
 from .models import Message
 
 @login_required
@@ -19,7 +20,9 @@ def delete_user(request):
     return redirect('home')
 
 @login_required
+@cache_page(60)  # Cache the view for 60 seconds
 def threaded_conversation(request, message_id):
+    """Display a message and all its threaded replies efficiently."""
     message = (Message.objects.select_related('sender', 'receiver')
                .prefetch_related('replies__sender', 'replies__receiver')
                .get(id=message_id))
@@ -47,6 +50,5 @@ def threaded_conversation(request, message_id):
 @login_required
 def inbox(request):
     """Display only unread messages for the logged-in user with optimized fields."""
-    # Explicitly apply .only() to ensure optimization is visible in the view
     unread_messages = Message.unread.unread_for_user(request.user).only('id', 'content', 'sender', 'timestamp')
     return render(request, 'messaging/inbox.html', {'unread_messages': unread_messages})
