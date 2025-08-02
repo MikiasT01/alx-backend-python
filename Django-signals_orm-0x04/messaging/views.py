@@ -20,13 +20,9 @@ def delete_user(request):
 
 @login_required
 def threaded_conversation(request, message_id):
-    """Display a message and all its threaded replies efficiently."""
-    # Optimize query with select_related for foreign keys and prefetch_related for replies
     message = (Message.objects.select_related('sender', 'receiver')
                .prefetch_related('replies__sender', 'replies__receiver')
                .get(id=message_id))
-
-    # Recursive query using filter to fetch all replies
     def get_all_replies(parent_id):
         replies = (Message.objects.filter(parent_message_id=parent_id)
                    .select_related('sender', 'receiver')
@@ -35,19 +31,21 @@ def threaded_conversation(request, message_id):
         for reply in replies:
             all_replies.extend(get_all_replies(reply.id))
         return all_replies
-
     replies = get_all_replies(message_id)
-    
-    # Allow adding a reply (associating sender with request.user)
     if request.method == 'POST':
         content = request.POST.get('content')
         if content:
             Message.objects.create(
                 sender=request.user,
-                receiver=message.receiver,  # Keep receiver as the original recipient
+                receiver=message.receiver,
                 content=content,
                 parent_message=message
             )
             return redirect('threaded_conversation', message_id=message_id)
-
     return render(request, 'messaging/threaded.html', {'message': message, 'replies': replies})
+
+@login_required
+def inbox(request):
+    """Display only unread messages for the logged-in user."""
+    unread_messages = Message.unread.for_user(request.user)
+    return render(request, 'messaging/inbox.html', {'unread_messages': unread_messages})
