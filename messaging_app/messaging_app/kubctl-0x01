@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Scale the deployment to 3 replicas
+echo "Scaling messaging-app-deployment to 3 replicas..."
+kubectl scale deployment messaging-app-deployment --replicas=3
+
+# Verify multiple pods are running
+echo "Verifying pods..."
+kubectl get pods
+
+# Perform load testing with wrk (assuming port-forwarding to access the service)
+echo "Performing load testing with wrk..."
+kubectl port-forward service/messaging-app-service 8000:8000 &
+PORT_FORWARD_PID=$!
+sleep 2  # Wait for port-forwarding to start
+wrk -t10 -c100 -d30s http://localhost:8000/
+kill $PORT_FORWARD_PID
+
+# Monitor resource usage
+echo "Monitoring resource usage..."
+kubectl top pods
