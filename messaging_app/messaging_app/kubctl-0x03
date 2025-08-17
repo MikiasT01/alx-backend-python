@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# Apply the updated deployment to trigger rolling update
+echo "Applying updated deployment..."
+kubectl apply -f blue_deployment.yaml
+
+# Monitor the rolling update progress
+echo "Monitoring rolling update status..."
+kubectl rollout status deployment/messaging-app-deployment
+
+# Test for downtime with continuous curl requests
+echo "Testing for downtime with curl..."
+kubectl port-forward service/messaging-app-service 8000:8000 &
+PORT_FORWARD_PID=$!
+sleep 2  # Wait for port-forwarding to start
+for i in {1..30}; do
+  curl -s -o /dev/null -w "%{http_code} " http://localhost:8000/api
+  sleep 1
+done
+kill $PORT_FORWARD_PID
+
+# Verify the rolling update is complete by checking pods
+echo "Verifying current pods..."
+kubectl get pods
