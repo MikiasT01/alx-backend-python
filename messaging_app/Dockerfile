@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire app
 COPY . .
 
-# Expose port 8000
+# Expose port 8000 for the Django app (to be mapped with -p at runtime)
 EXPOSE 8000
 
 # Run the Django server
