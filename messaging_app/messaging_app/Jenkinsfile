@@ -2,6 +2,9 @@ pipeline {
     agent any
     environment {
         HOME = "${env.WORKSPACE}"
+        DOCKER_HUB_USERNAME = 'yourusername'  // Replace with your Docker Hub username
+        IMAGE_NAME = 'yourusername/django-messaging-app'
+        IMAGE_TAG = 'latest'
     }
     stages {
         stage('Checkout') {
@@ -26,10 +29,26 @@ pipeline {
                 junit 'test-reports/results.xml'
             }
         }
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .'
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                    sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                    sh 'docker push ${IMAGE_NAME}:${IMAGE_TAG}'
+                }
+            }
+        }
     }
     post {
         always {
             archiveArtifacts artifacts: 'test-reports/results.xml', allowEmptyArchive: true
+        }
+        cleanup {
+            sh 'docker logout'
         }
     }
 }
