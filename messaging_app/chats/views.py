@@ -1,4 +1,3 @@
-# Django-Middleware-0x03/chats/views.py
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +8,7 @@ from .serializers import ConversationSerializer, MessageSerializer
 from .permissions import IsAuthenticatedParticipant
 from .filters import MessageFilter
 from .pagination import MessagePagination
+from rest_framework import HTTP_403_FORBIDDEN
 
 class ConversationViewSet(viewsets.ModelViewSet):
     """ViewSet for handling Conversation model operations."""
@@ -28,8 +28,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
             return Response({"error": "Invalid participant IDs"}, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            if not all(user in request.user.participants.all() for user in users):  # Participant check
-                return Response({"detail": "You are not authorized to create this conversation."}, status=status.HTTP_403_FORBIDDEN)
+            if not all(user in request.user.participants.all() for user in users):
+                return Response({"detail": "You are not authorized to create this conversation."}, status=HTTP_403_FORBIDDEN)
             serializer.save(participants=users)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -48,7 +48,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         queryset = Message.objects.filter()  # Explicitly use Message.objects.filter
         conversation = self.kwargs.get('conversation_pk')
         if conversation is not None:
-            return queryset.filter(conversation_id=conversation)
+            queryset = queryset.filter(conversation_id=conversation)
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -63,7 +63,7 @@ class MessageViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             if request.user not in conversation.participants.all():
-                return Response({"detail": "You are not a participant in this conversation."}, status=status.HTTP_403_FORBIDDEN)
+                return Response({"detail": "You are not a participant in this conversation."}, status=HTTP_403_FORBIDDEN)
             serializer.save(conversation=conversation)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -71,11 +71,11 @@ class MessageViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
         if request.user not in instance.conversation.participants.all():
-            return Response({"detail": "You are not a participant in this conversation."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "You are not a participant in this conversation."}, status=HTTP_403_FORBIDDEN)
         return super().update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         if request.user not in instance.conversation.participants.all():
-            return Response({"detail": "You are not a participant in this conversation."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "You are not a participant in this conversation."}, status=HTTP_403_FORBIDDEN)
         return super().destroy(request, *args, **kwargs)
